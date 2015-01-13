@@ -1,21 +1,9 @@
 package com.ofg.loanapplication.domain
 
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-class LoanApplicationRepository {
+interface LoanApplicationRepository extends MongoRepository<LoanApplication, String> {
 
-	@Autowired
-	MongoTemplate mongoTemplate
-
-
-	def create(LoanApplication loanApplication) {
-		mongoTemplate.insert(loanApplication)
-	}
-
-	def list() {
-		mongoTemplate.findAll(LoanApplication)
-	}
 }

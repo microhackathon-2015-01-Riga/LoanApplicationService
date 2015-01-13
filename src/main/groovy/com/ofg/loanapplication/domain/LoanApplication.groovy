@@ -3,11 +3,10 @@ package com.ofg.loanapplication.domain
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 
-
 @Document
 class LoanApplication {
 	@Id
-	String applicationId
+	String id
 	BigDecimal amount
-	Integer term
+	String loanId
 }
