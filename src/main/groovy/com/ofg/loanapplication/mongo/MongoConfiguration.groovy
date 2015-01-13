@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.config.AbstractMongoConfiguration
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories
 
 @Configuration
-@EnableMongoRepositories
+@EnableMongoRepositories(basePackages="com.ofg.loanapplication.domain")
 class MongoConfiguration extends AbstractMongoConfiguration {
 
 	@Override

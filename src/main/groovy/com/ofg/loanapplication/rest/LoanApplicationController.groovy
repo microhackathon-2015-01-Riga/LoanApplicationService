@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @TypeChecked
 @Api(value = "loanApplication", description = "Creates loan application")
 class LoanApplicationController {
+   
     @Autowired
     LoanApplicationRepository repository
 
