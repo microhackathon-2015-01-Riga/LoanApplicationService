@@ -1,5 +1,7 @@
 package com.ofg.loanapplication.rest
 
+import com.codahale.metrics.Meter
+import com.codahale.metrics.MetricRegistry
 import com.nurkiewicz.asyncretry.AsyncRetryExecutor
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient
 import com.ofg.loanapplication.domain.LoanApplication
@@ -25,11 +27,20 @@ import java.util.concurrent.ScheduledThreadPoolExecutor
 @Api(value = "loanApplication", description = "Creates loan application")
 class LoanApplicationController {
 
-	@Autowired
-	LoanApplicationRepository repository
+
+	private final LoanApplicationRepository repository
+	private final ServiceRestClient serviceRestClient
+	private final Meter meter
+
 
 	@Autowired
-	ServiceRestClient serviceRestClient
+	LoanApplicationController(MetricRegistry metricRegistry,
+	                          LoanApplicationRepository repository,
+	                          ServiceRestClient serviceRestClient) {
+		meter = metricRegistry.meter('loanAmount')
+		this.repository = repository
+		this.serviceRestClient = serviceRestClient
+	}
 
 	@RequestMapping(
 			value = '/loanApplication',
@@ -38,9 +49,10 @@ class LoanApplicationController {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Save new loan application")
 	ResponseEntity<LoanApplicationBean> create(LoanApplicationBean loanApplication) {
-
 		repository.save(new LoanApplication(loanId: loanApplication.loanId, amount: loanApplication.amount))
-
+		
+		meter.mark(loanApplication.amount as Long)
+		
 		callFraudService(loanApplication)
 
 		callReportService(loanApplication)
