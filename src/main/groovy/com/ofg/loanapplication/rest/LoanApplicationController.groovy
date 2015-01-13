@@ -63,29 +63,16 @@ class LoanApplicationController {
 
 	private String callFraudService(LoanApplicationBean loanApplication) {
 		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1)).withMaxRetries(3)
+
+		def fraudRequest = new FraudRequest(firstName: loanApplication.firstName, lastName: loanApplication.lastName, job: loanApplication.job, amount: loanApplication.amount, age: loanApplication.age)
 		serviceRestClient.forService("fraud").retryUsing(asyncRetryExecutor)
 				.put()
 				.onUrl("/api/loanApplication/${loanApplication.loanId}")
-				.body(new FraudRequest(firstName: loanApplication.firstName, lastname: loanApplication.lastName, job: loanApplication.job, amount: loanApplication.amount, age: loanApplication.age))
+				.body(fraudRequest)
 				.withHeaders().contentTypeJson()
 				.andExecuteFor()
 				.anObject()
 				.ofType(String)
-	}
-
-	class FraudRequest {
-		String firstName
-		String lastname
-		String job
-		Integer amount
-		Integer age
-	}
-
-	class ReportRequest {
-		String firstName
-		String lastname
-		String loanId
-		Integer age
 	}
 
 	private String callReportService(LoanApplicationBean loanApplication) {
@@ -93,11 +80,12 @@ class LoanApplicationController {
 		serviceRestClient.forService("report").retryUsing(asyncRetryExecutor)
 				.post()
 				.onUrl("/api/client")
-				.body(new ReportRequest(firstName: loanApplication.firstName, lastname: loanApplication.lastName, loanId: loanApplication.loanId, age: loanApplication.age))
+				.body(new ReportRequest(firstName: loanApplication.firstName, lastName: loanApplication.lastName, loanId: loanApplication.loanId, age: loanApplication.age))
 
 				.withHeaders().contentTypeJson()
 				.andExecuteFor()
 				.anObject()
 				.ofType(String)
 	}
+
 }
