@@ -62,8 +62,7 @@ class LoanApplicationController {
 	}
 
 	private String callFraudService(LoanApplicationBean loanApplication) {
-		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1))
-		asyncRetryExecutor.withMaxRetries(3)
+		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1)).withMaxRetries(3)
 		serviceRestClient.forService("fraud").retryUsing(asyncRetryExecutor)
 				.put()
 				.onUrl("/api/loanApplication/${loanApplication.loanId}")
@@ -75,8 +74,7 @@ class LoanApplicationController {
 	}
 
 	private String callReportService(LoanApplicationBean loanApplication) {
-		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1))
-		asyncRetryExecutor.withMaxRetries(3)
+		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1)).withMaxRetries(3)
 		serviceRestClient.forService("report").retryUsing(asyncRetryExecutor)
 				.post()
 				.onUrl("/api/client")
