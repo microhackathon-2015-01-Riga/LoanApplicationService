@@ -66,11 +66,26 @@ class LoanApplicationController {
 		serviceRestClient.forService("fraud").retryUsing(asyncRetryExecutor)
 				.put()
 				.onUrl("/api/loanApplication/${loanApplication.loanId}")
-				.body("{ 'firstName' : '${loanApplication.firstName}', 'lastName' : ${loanApplication.lastName}, 'job' : ${loanApplication.job}, 'amount' : ${loanApplication.amount}, 'age' : ${loanApplication.amount} }")
+				.body(new FraudRequest(firstName: loanApplication.firstName, lastname: loanApplication.lastName, job: loanApplication.job, amount: loanApplication.amount, age: loanApplication.age))
 				.withHeaders().contentTypeJson()
 				.andExecuteFor()
 				.anObject()
 				.ofType(String)
+	}
+
+	class FraudRequest {
+		String firstName
+		String lastname
+		String job
+		Integer amount
+		Integer age
+	}
+
+	class ReportRequest {
+		String firstName
+		String lastname
+		String loanId
+		Integer age
 	}
 
 	private String callReportService(LoanApplicationBean loanApplication) {
@@ -78,7 +93,8 @@ class LoanApplicationController {
 		serviceRestClient.forService("report").retryUsing(asyncRetryExecutor)
 				.post()
 				.onUrl("/api/client")
-				.body(" { 'firstName' : '${loanApplication.firstName}', 'lastName' : ${loanApplication.lastName}, 'age' : ${loanApplication.amount}, 'loanId' : ${loanApplication.loanId} }")
+				.body(new ReportRequest(firstName: loanApplication.firstName, lastname: loanApplication.lastName, loanId: loanApplication.loanId, age: loanApplication.age))
+
 				.withHeaders().contentTypeJson()
 				.andExecuteFor()
 				.anObject()
