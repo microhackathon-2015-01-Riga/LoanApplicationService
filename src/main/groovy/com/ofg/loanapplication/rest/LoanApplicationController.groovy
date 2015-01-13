@@ -1,5 +1,6 @@
 package com.ofg.loanapplication.rest
 
+import com.nurkiewicz.asyncretry.AsyncRetryExecutor
 import com.ofg.infrastructure.web.resttemplate.fluent.ServiceRestClient
 import com.ofg.loanapplication.domain.LoanApplication
 import com.ofg.loanapplication.domain.LoanApplicationRepository
@@ -14,6 +15,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
+
+import java.util.concurrent.ScheduledThreadPoolExecutor
 
 @Slf4j
 @RestController
@@ -40,27 +43,31 @@ class LoanApplicationController {
 
 		callFraudService(loanApplication)
 
-		callReportService()
-		
+		callReportService(loanApplication)
+
 		new ResponseEntity<LoanApplicationBean>(loanApplication, HttpStatus.CREATED);
 	}
 
 	private String callFraudService(LoanApplicationBean loanApplication) {
-		serviceRestClient.forService("fraud")
+		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1))
+		asyncRetryExecutor.withMaxRetries(3)
+		serviceRestClient.forService("fraud").retryUsing(asyncRetryExecutor)
 				.put()
 				.onUrl("/api/loanApplication/${loanApplication.loanId}")
-				.body('''{ "firstName" : "text", "lastName" : "text", "job" : "text", "amount" : 20, "age" : 20 }''')
+				.body("{ 'firstName' : '${loanApplication.firstName}', 'lastName' : ${loanApplication.lastName}, 'job' : ${loanApplication.job}, 'amount' : ${loanApplication.amount}, 'age' : ${loanApplication.amount} }")
 				.withHeaders().contentTypeJson()
 				.andExecuteFor()
 				.anObject()
 				.ofType(String)
 	}
 
-	private String callReportService() {
-		serviceRestClient.forService("report")
-				.put()
+	private String callReportService(LoanApplicationBean loanApplication) {
+		def asyncRetryExecutor = new AsyncRetryExecutor(new ScheduledThreadPoolExecutor(1))
+		asyncRetryExecutor.withMaxRetries(3)
+		serviceRestClient.forService("report").retryUsing(asyncRetryExecutor)
+				.post()
 				.onUrl("/api/client")
-				.body('''{ "firstName" : "text", "lastName" : "text", "age" : 20, "loanId" : "20" }''')
+				.body(" { 'firstName' : '${loanApplication.firstName}', 'lastName' : ${loanApplication.lastName}, 'age' : ${loanApplication.amount}, 'loanId' : ${loanApplication.loanId} }")
 				.withHeaders().contentTypeJson()
 				.andExecuteFor()
 				.anObject()
