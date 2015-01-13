@@ -49,14 +49,15 @@ class LoanApplicationController {
 			produces = MediaType.APPLICATION_JSON_VALUE)
 	@ApiOperation(value = "Save new loan application")
 	ResponseEntity<LoanApplicationBean> create(LoanApplicationBean loanApplication) {
+		log.info("Trying to create application with id: ${loanApplication.loanId} and amount ${loanApplication.amount}")
 		repository.save(new LoanApplication(loanId: loanApplication.loanId, amount: loanApplication.amount))
-		
+		log.info("Application saved")
 		meter.mark(loanApplication.amount as Long)
-		
+		log.info("Metrics added")
 		callFraudService(loanApplication)
-
+		log.info("Fraud service called")
 		callReportService(loanApplication)
-
+		log.info("Report service called")
 		new ResponseEntity<LoanApplicationBean>(loanApplication, HttpStatus.CREATED);
 	}
 
